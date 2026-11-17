@@ -10,14 +10,18 @@
 
 Never commit `.env`, `.env.render` or `.env.vercel`. They are git-ignored.
 
-## How the security works
+## Permissions
 
-- **Public role** (shoppers): read products, check out, sign in. Nothing else.
-- **Store Manager role**: create, edit and delete products and upload images. `/products` asks for a sign-in.
-- **Authenticated role** (any other account): cannot change products.
-- Self-registration is off, so the only accounts are the ones you create in the admin panel.
-- `src/index.ts` applies these rules every time the server starts. If you change permissions in the admin panel under *Users & Permissions*, the next restart puts them back.
-- Checkout is limited to 10 orders per minute per visitor, and sign-in to 10 tries per minute.
+As in Guide 1, `/products` has no sign-in and the **Public role** does everything. Set it in the admin panel under **Settings > Users & Permissions Plugin > Roles > Public**:
+
+- **Product**: `find`, `findOne`, `create`, `update`, `delete`
+- **Upload**: `upload`
+
+The permissions are saved in the database, so they survive restarts and redeploys.
+
+> Anyone who has the site address can change or delete products. Keep the address private and take the site down when it is no longer needed.
+
+- Checkout (`POST /api/products/checkout`) is a public route and is limited to 10 orders per minute per visitor.
 - The API accepts browser requests only from the addresses in `FRONTEND_URL`.
 
 ## 1. Neon (database)
@@ -95,11 +99,11 @@ The restore brings your Strapi admin account with it, so nobody else can claim t
 2. Under **Environment Variables**, add `NUXT_PUBLIC_STRAPI_URL` = `https://<service>.onrender.com` (no trailing slash).
 3. Deploy. If the address is not `https://shopkart.vercel.app`, set the real one as `FRONTEND_URL` on Render. Render redeploys automatically.
 
-## 7. Create the Store Manager account
+## 7. Set the Public permissions
 
 1. Open `https://<service>.onrender.com/admin` and sign in with your existing Strapi admin account.
-2. Go to **Content Manager > User > Create new entry**. Enter a username, email and strong password, set **confirmed** to *true* and **role** to *Store Manager*, then save.
-3. On the live site, open **Manage Products** and sign in with that account.
+2. Set the Public role permissions listed under [Permissions](#permissions) and save.
+3. On the live site, open **Manage Products** and add a test product to check that it works.
 
 ## 8. UptimeRobot (keep the backend awake)
 

@@ -11,24 +11,6 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
   const useR2 = Boolean(env('R2_BUCKET'));
 
   return {
-    'users-permissions': {
-      config: {
-        // Short-lived access token (jwt) plus a refresh token the storefront
-        // keeps in sessionStorage. Cookies are not used because the frontend
-        // (Vercel) and this API (Render) are on different sites.
-        jwtManagement: 'refresh',
-        sessions: {
-          accessTokenLifespan: 30 * 60, // 30 minutes
-          idleRefreshTokenLifespan: 24 * 60 * 60, // 1 day without use
-          maxRefreshTokenLifespan: 7 * 24 * 60 * 60, // 7 days at most
-          idleSessionLifespan: 24 * 60 * 60,
-          maxSessionLifespan: 7 * 24 * 60 * 60,
-          httpOnly: false,
-        },
-        // Sign-in attempts per IP: 10 per minute.
-        ratelimit: { interval: 60000, max: 10 },
-      },
-    },
     upload: {
       config: {
         sizeLimit: 5 * 1024 * 1024, // 5 MB per image
