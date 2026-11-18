@@ -44,7 +44,7 @@ Create `shopkart-server/.env.render` with the content below. Generate the five s
 NODE_ENV=production
 IS_PROXIED=true
 PUBLIC_URL=https://shopkart-server.onrender.com
-FRONTEND_URL=https://shopkart.vercel.app
+FRONTEND_URL=https://minekartt.vercel.app
 
 APP_KEYS=<secret>,<secret>
 API_TOKEN_SALT=<secret>
@@ -97,7 +97,7 @@ The restore brings your Strapi admin account with it, so nobody else can claim t
 
 1. **Add New > Project**, then import `minekartt-web-frontend`. Vercel detects Nuxt.
 2. Under **Environment Variables**, add `NUXT_PUBLIC_STRAPI_URL` = `https://<service>.onrender.com` (no trailing slash).
-3. Deploy. If the address is not `https://shopkart.vercel.app`, set the real one as `FRONTEND_URL` on Render. Render redeploys automatically.
+3. Deploy. If the address is not `https://minekartt.vercel.app`, set the real one as `FRONTEND_URL` on Render. Render redeploys automatically.
 
 ## 7. Set the Public permissions
 
