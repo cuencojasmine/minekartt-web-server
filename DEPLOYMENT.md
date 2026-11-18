@@ -2,8 +2,8 @@
 
 | Part | Service | Repository |
 | --- | --- | --- |
-| Storefront (Nuxt 4) | Vercel | `cuencojasmine/shopkart-web-frontend` |
-| API + admin panel (Strapi 5) | Render, free Docker web service | `cuencojasmine/shopkart-web-server` |
+| Storefront (Nuxt 4) | Vercel | `cuencojasmine/minekartt-web-frontend` |
+| API + admin panel (Strapi 5) | Render, free Docker web service | `cuencojasmine/minekartt-web-server` |
 | Database (PostgreSQL 18) | Neon | — |
 | Product images | Cloudflare R2 bucket | — |
 | Keep-awake ping | UptimeRobot | — |
@@ -87,7 +87,7 @@ The restore brings your Strapi admin account with it, so nobody else can claim t
 
 > **Use a separate Render workspace.** Free hours (750 per month) are shared by every service in a workspace. If iMapSU and ShopKart are both kept awake around the clock in one workspace, the hours run out mid-month and Render suspends **both**. Create a new workspace (for example "ShopKart") from the workspace menu at the top left.
 
-1. **New > Web Service**, then connect `shopkart-web-server`.
+1. **New > Web Service**, then connect `minekartt-web-server`.
 2. Set **Language** to *Docker*, **Branch** to `main`, **Region** to *Singapore* and **Instance type** to *Free*.
 3. Under **Advanced**, set **Health Check Path** to `/_health`.
 4. Under **Environment**, choose **Add from .env** and paste the whole `.env.render`.
@@ -95,7 +95,7 @@ The restore brings your Strapi admin account with it, so nobody else can claim t
 
 ## 6. Vercel (frontend)
 
-1. **Add New > Project**, then import `shopkart-web-frontend`. Vercel detects Nuxt.
+1. **Add New > Project**, then import `minekartt-web-frontend`. Vercel detects Nuxt.
 2. Under **Environment Variables**, add `NUXT_PUBLIC_STRAPI_URL` = `https://<service>.onrender.com` (no trailing slash).
 3. Deploy. If the address is not `https://shopkart.vercel.app`, set the real one as `FRONTEND_URL` on Render. Render redeploys automatically.
 
