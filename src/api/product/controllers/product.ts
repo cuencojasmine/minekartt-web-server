@@ -19,6 +19,66 @@ const MAX_ADDRESS_LENGTH = 300;
 // Philippine mobile number: 09XXXXXXXXX or +639XXXXXXXXX
 const PH_MOBILE_REGEX = /^(09|\+639)\d{9}$/;
 
+// ===== Product Management limits (must match pages/products.vue in the storefront) =====
+const PRODUCT_CATEGORIES = ['Electronics', 'Fashion', 'Sports', 'Bags', 'Beauty', 'Home & Living', 'Toys'];
+const PRODUCT_FIELDS = ['name', 'description', 'price', 'stock', 'category', 'is_active'];
+const MAX_PRODUCT_NAME = 100;
+const MAX_DESCRIPTION = 2000;
+const MAX_PRICE = 10_000_000;
+const MAX_STOCK = 1_000_000;
+
+// Checks the `data` of a create / update request. On update only the fields
+// that were sent are checked. Returns a list of problems (empty when valid).
+function validateProductData(data: any, isCreate: boolean) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return ['Product data is missing.'];
+  }
+
+  const problems: string[] = [];
+  const has = (field: string) => data[field] !== undefined;
+
+  for (const field of Object.keys(data)) {
+    if (!PRODUCT_FIELDS.includes(field)) problems.push(`"${field}" cannot be set here.`);
+  }
+
+  if (isCreate || has('name')) {
+    const name = typeof data.name === 'string' ? data.name.trim() : '';
+    if (!name) problems.push('Product name is required.');
+    else if (name.length > MAX_PRODUCT_NAME) problems.push(`Product name must be ${MAX_PRODUCT_NAME} characters or less.`);
+  }
+
+  if (has('description') && data.description !== null) {
+    if (typeof data.description !== 'string') problems.push('Description must be text.');
+    else if (data.description.length > MAX_DESCRIPTION) problems.push(`Description must be ${MAX_DESCRIPTION} characters or less.`);
+  }
+
+  if (isCreate || has('price')) {
+    const price = Number(data.price);
+    if (data.price === null || data.price === '' || !Number.isFinite(price)) problems.push('Price must be a number.');
+    else if (price < 0) problems.push('Price cannot be negative.');
+    else if (price > MAX_PRICE) problems.push(`Price cannot be more than ${MAX_PRICE.toLocaleString('en-PH')}.`);
+    // Tolerance because e.g. 19.99 * 100 is 1998.9999999999998 in floating point.
+    else if (Math.abs(Math.round(price * 100) - price * 100) > 1e-6) problems.push('Price can have at most 2 decimal places.');
+  }
+
+  if (isCreate || has('stock')) {
+    const stock = Number(data.stock);
+    if (data.stock === null || data.stock === '' || !Number.isInteger(stock)) problems.push('Stock must be a whole number.');
+    else if (stock < 0) problems.push('Stock cannot be negative.');
+    else if (stock > MAX_STOCK) problems.push(`Stock cannot be more than ${MAX_STOCK.toLocaleString('en-PH')}.`);
+  }
+
+  if (isCreate || has('category')) {
+    if (!PRODUCT_CATEGORIES.includes(data.category)) problems.push('Please choose a valid category.');
+  }
+
+  if (has('is_active') && typeof data.is_active !== 'boolean') {
+    problems.push('Active status must be true or false.');
+  }
+
+  return problems;
+}
+
 // Thrown inside the transaction so every stock change is rolled back.
 class CheckoutError extends Error {
   problems: string[];
@@ -30,6 +90,24 @@ class CheckoutError extends Error {
 }
 
 export default factories.createCoreController('api::product.product', ({ strapi }) => ({
+  // Product Management has no sign-in, so every change is validated here
+  // before Strapi's default create / update runs.
+  async create(ctx) {
+    const problems = validateProductData(ctx.request.body?.data, true);
+    if (problems.length > 0) {
+      return ctx.badRequest(problems[0], { errors: problems });
+    }
+    return super.create(ctx);
+  },
+
+  async update(ctx) {
+    const problems = validateProductData(ctx.request.body?.data, false);
+    if (problems.length > 0) {
+      return ctx.badRequest(problems[0], { errors: problems });
+    }
+    return super.update(ctx);
+  },
+
   async checkout(ctx) {
     const body = ctx.request.body?.data ?? {};
     const customer = body.customer ?? {};

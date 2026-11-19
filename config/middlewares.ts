@@ -36,13 +36,20 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Middlewar
         credentials: false,
       },
     },
+    // Rate limits and the storefront-only rule for changes (src/middlewares/api-guard.ts).
+    // After cors, so a 429 / 403 still carries the CORS headers the storefront needs to read it.
+    'global::api-guard',
     'strapi::poweredBy',
     'strapi::query',
     {
       name: 'strapi::body',
       config: {
+        // Product data and checkout bodies are tiny; refuse anything big.
+        jsonLimit: '100kb',
+        formLimit: '100kb',
+        textLimit: '100kb',
         // Product photos only; matches the upload plugin's sizeLimit.
-        formidable: { maxFileSize: 5 * 1024 * 1024 },
+        formidable: { maxFileSize: 5 * 1024 * 1024, maxFiles: 1 },
       },
     },
     'strapi::session',

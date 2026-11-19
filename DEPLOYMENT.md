@@ -12,17 +12,32 @@ Never commit `.env`, `.env.render` or `.env.vercel`. They are git-ignored.
 
 ## Permissions
 
-As in Guide 1, `/products` has no sign-in and the **Public role** does everything. Set it in the admin panel under **Settings > Users & Permissions Plugin > Roles > Public**:
+As in Guide 1, `/products` has no sign-in and the **Public role** does everything. The server sets these on every start (`src/index.ts`), and you can see them in the admin panel under **Settings > Users & Permissions Plugin > Roles > Public**:
 
 - **Product**: `find`, `findOne`, `create`, `update`, `delete`
 - **Upload**: `upload`
 
-The permissions are saved in the database, so they survive restarts and redeploys.
+Everything else is removed from the Public role, so `/api/auth/*` (sign-in and sign-up) is closed and self-registration is off.
+
+## Security without a sign-in
 
 > Anyone who has the site address can change or delete products. Keep the address private and take the site down when it is no longer needed.
 
-- Checkout (`POST /api/products/checkout`) is a public route and is limited to 10 orders per minute per visitor.
+`src/middlewares/api-guard.ts` limits what one visitor can do:
+
+| Requests | Limit per visitor IP |
+| --- | --- |
+| Product create / update / delete and image uploads | 30 per minute and 200 per hour |
+| Checkout (`POST /api/products/checkout`, public route) | 10 per minute |
+| Everything else under `/api` (reads) | 300 per minute |
+
+- Over the limit, the API answers `429 Too Many Requests` with a `Retry-After` header and the storefront shows the message.
+- Changes and checkouts are only accepted when the browser's `Origin` is in `FRONTEND_URL`. Requests from other sites, or from scripts without that header, get `403`.
+- On Render the visitor IP comes from Cloudflare's `CF-Connecting-IP` header, which visitors cannot fake.
+- Product data is validated on the server (`src/api/product/controllers/product.ts`): name up to 100 characters, description up to 2000, price 0 to 10,000,000 with at most 2 decimals, whole-number stock 0 to 1,000,000, and one of the 7 shop categories.
+- Uploads accept one image of at most 5 MB, and SVG is refused. JSON bodies are capped at 100 KB.
 - The API accepts browser requests only from the addresses in `FRONTEND_URL`.
+- The Strapi admin panel (`/admin`) keeps its own sign-in.
 
 ## 1. Neon (database)
 
@@ -99,10 +114,10 @@ The restore brings your Strapi admin account with it, so nobody else can claim t
 2. Under **Environment Variables**, add `NUXT_PUBLIC_STRAPI_URL` = `https://<service>.onrender.com` (no trailing slash).
 3. Deploy. If the address is not `https://minekartt.vercel.app`, set the real one as `FRONTEND_URL` on Render. Render redeploys automatically.
 
-## 7. Set the Public permissions
+## 7. Check the Public permissions
 
 1. Open `https://<service>.onrender.com/admin` and sign in with your existing Strapi admin account.
-2. Set the Public role permissions listed under [Permissions](#permissions) and save.
+2. Check that the Public role has the permissions listed under [Permissions](#permissions). The server sets them on start.
 3. On the live site, open **Manage Products** and add a test product to check that it works.
 
 ## 8. UptimeRobot (keep the backend awake)
