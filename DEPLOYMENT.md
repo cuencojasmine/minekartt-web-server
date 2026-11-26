@@ -8,6 +8,8 @@
 | Product images | Cloudflare R2 bucket | — |
 | Keep-awake ping | UptimeRobot | — |
 
+Live addresses: storefront `https://minekartt.vercel.app`, API and admin panel `https://shopkart-server-10ey.onrender.com` (the `<service>` in the steps below is `shopkart-server-10ey`).
+
 Never commit `.env`, `.env.render` or `.env.vercel`. They are git-ignored.
 
 ## Permissions
@@ -59,7 +61,7 @@ Create `shopkart-server/.env.render` with the content below. Generate the five s
 ```env
 NODE_ENV=production
 IS_PROXIED=true
-PUBLIC_URL=https://shopkart-server.onrender.com
+PUBLIC_URL=https://shopkart-server-10ey.onrender.com
 FRONTEND_URL=https://minekartt.vercel.app
 
 APP_KEYS=<secret>,<secret>
@@ -79,7 +81,7 @@ R2_ACCOUNT_ID=<account id>
 R2_ACCESS_KEY_ID=<access key id>
 R2_SECRET_ACCESS_KEY=<secret access key>
 R2_BUCKET=shopkart-images
-R2_PUBLIC_URL=https://shopkart-server.onrender.com/images
+R2_PUBLIC_URL=https://shopkart-server-10ey.onrender.com/images
 ```
 
 Fix `PUBLIC_URL`, `R2_PUBLIC_URL` and `FRONTEND_URL` after steps 5 and 6 if Render or Vercel gives a different address.
