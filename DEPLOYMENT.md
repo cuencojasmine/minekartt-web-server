@@ -14,8 +14,9 @@ Never commit `.env`, `.env.render` or `.env.vercel`. They are git-ignored.
 
 As in Guide 1, `/products` has no sign-in and the **Public role** does everything. The server sets these on every start (`src/index.ts`), and you can see them in the admin panel under **Settings > Users & Permissions Plugin > Roles > Public**:
 
-- **Product**: `find`, `findOne`, `create`, `update`, `delete`
-- **Upload**: `upload`
+- **Product**: `find`, `findOne`
+
+The site is **read-only** since grading: `create`, `update`, `delete` and **Upload** `upload` were removed so nobody can add products or push images to R2. Manage products in the admin panel (`/admin`) instead. To reopen Product Management, add those four actions back to `PUBLIC_ACTIONS` in `src/index.ts` and set `READ_ONLY = false` in the storefront's `app/pages/products.vue`.
 
 Everything else is removed from the Public role, so `/api/auth/*` (sign-in and sign-up) is closed and self-registration is off.
 
